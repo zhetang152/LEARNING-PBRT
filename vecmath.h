@@ -242,6 +242,27 @@ public:
         return *this;
     }
 };
+template <typename T>
+class Normal3 : public Tuple3<Normal3, T> {
+  public:
+    using Tuple3<Normal3, T>::x;
+    using Tuple3<Normal3, T>::y;
+    using Tuple3<Normal3, T>::z;
+
+    using Tuple3<Normal3, T>::HasNaN;
+    using Tuple3<Normal3, T>::operator+;
+    using Tuple3<Normal3, T>::operator*;
+    using Tuple3<Normal3, T>::operator*=;
+
+    Normal3() = default;
+    Normal3(T x, T y, T z) : Tuple3<Normal3, T>(x, y, z) {}
+    template <typename U>
+    explicit Normal3<T>(Normal3<U> v): Tuple3<Normal3, T>(T(v.x), T(v.y), T(v.z)) {}
+
+    template <typename U>
+    explicit Normal3<T>(Vector3<U> v): Tuple3<Normal3, T>(T(v.x), T(v.y), T(v.z)) {}
+};
+
 //operations on Vector3
 //length and normalization
 template<typename T>
@@ -293,6 +314,7 @@ inline void CoordinateSystem(const Vector3<T> v1, const Vector3<T> *v2, const Ve
     *v2 = Vector3f(1 + sign * Sqr(v1.x) * a, sign * b, -sign * v1.x);
     *v3 = Vector3f(b, sign + Sqr(v1.y) * a, -v1.y);
 }
+
 //Operations on Point3
 template<typename T>
 inline auto DistanceSquared(const Point3<T> p1, const Point3<T> p2){
@@ -301,4 +323,63 @@ inline auto DistanceSquared(const Point3<T> p1, const Point3<T> p2){
 template<typename T>
 inline auto Distance(const Point3<T> p1, const Point3<T> p2){
     return Length(p1 - p2);
+}
+
+//Operations on Normal3
+template<typename T>
+inline auto LengthSquared(Normal3<T> n) -> typename TLength<T>::type {
+    return Sqr(n.x) + Sqr(n.y) + Sqr(n.z);
+}
+
+template<typename T>
+inline auto Length(Normal3<T> n) -> typename TLength<T>::type {
+    using std::sqrt;
+    return sqrt(LengthSquared(n));
+}
+template<typename T>
+inline auto Normalize(Normal3<T> n) {
+    return n / Length(n);
+}
+template <typename T>
+inline auto Dot(Normal3<T> n, Vector3<T> v) -> typename TLength<T>::type {
+    return n.x * v.x + n.y * v.y + n.z * v.z;
+}
+template <typename T>
+inline auto Dot(Vector3<T> v, Normal3<T> n) -> typename TLength<T>::type {
+    return Dot(n, v);
+}
+template <typename T>
+inline auto Dot(Normal3<T> n1, Normal3<T> n2) -> typename TLength<T>::type {
+    return n1.x * n2.x + n1.y * n2.y + n1.z * n2.z;
+}
+template <typename T>
+inline auto AbsDot(Normal3<T> n, Vector3<T> v) -> typename TLength<T>::type {
+    return std::abs(Dot(n, v));
+}
+template <typename T>
+inline auto AbsDot(Vector3<T> v , Normal3<T> n) -> typename TLength<T>::type {
+    return std::abs(Dot(n, v));
+}
+template <typename T>
+inline auto AbsDot(Normal3<T> n1 , Normal3<T> n2) -> typename TLength<T>::type {
+    return std::abs(Dot(n1, n2));
+}
+template <typename T>
+inline Normal3<T> FaceForward(Normal3<T> n, Vector3<T> v) {
+    return (Dot(n, v) < 0.f) ? -n : n;//?
+}
+
+template <typename T>
+inline Normal3<T> FaceForward(Normal3<T> n, Normal3<T> n2) {
+    return (Dot(n, n2) < 0.f) ? -n : n;
+}
+
+template <typename T>
+inline Vector3<T> FaceForward(Vector3<T> v, Vector3<T> v2) {
+    return (Dot(v, v2) < 0.f) ? -v : v;
+}
+
+template <typename T>
+inline Vector3<T> FaceForward(Vector3<T> v, Normal3<T> n2) {
+    return (Dot(v, n2) < 0.f) ? -v : v;
 }
