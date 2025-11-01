@@ -216,7 +216,7 @@ public:
     Point3<T> operator-() const { return {-x, -y, -z}; }
 
     template<typename U>
-    auto operator+(Vector3<U> v) -> Point3<decltype(T{} + U{})>{
+    auto operator+(Vector3<U> v)const -> Point3<decltype(T{} + U{})>{
         return {x + v.x, y + v.y, z + v.z};
     }
     template<typename U>
@@ -383,3 +383,12 @@ template <typename T>
 inline Vector3<T> FaceForward(Vector3<T> v, Normal3<T> n2) {
     return (Dot(v, n2) < 0.f) ? -v : v;
 }
+
+class Bounds3 {
+
+};
+
+//记号
+using Vector3f = Vector3<Float>;
+using Point3f = Point3<Float>;
+using Normal3f = Normal3<Float>;
